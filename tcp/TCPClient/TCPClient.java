@@ -4,6 +4,8 @@ import java.net.*;
 
 public class TCPClient {
 
+    private final static String fileOutput = "C:/TCPClient/test.jfif";
+
     private String line = "";
     private String modifiedLine = "";
 
@@ -13,12 +15,15 @@ public class TCPClient {
     private DataOutputStream outToServer    = null;
 
     //private BufferedReader inFromServer     = null;
-    private BufferedReader inFromServer    = null;
+    private BufferedReader inFromServer     = null;
 
     private FileOutputStream fos            = null;
+    private ByteArrayOutputStream baos      = null;
+    private InputStream is                  = null;
+    private BufferedOutputStream bos        = null;
 
     // constructor to put ip iddress and port
-    public TCPClient (String address, int port, String destPath) {
+    public TCPClient (String address, int port) {
 
         // create client socket, connect to server
         try {
@@ -30,7 +35,8 @@ public class TCPClient {
             outToServer = new DataOutputStream(clientSocket.getOutputStream());
 
             // create input stream attached to the socket
-            inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            //inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            is = clientSocket.getInputStream();
 
             printInfo();
 
@@ -74,34 +80,58 @@ public class TCPClient {
         }
     }
 
-    public void saveFile(Socket clientSocket) {
+    public void saveFile() {
 
-        try {
-            System.out.println("debug...");
-            inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            System.out.println("debug...");
-            fos = new FileOutputStream("dlwlrma.jfif");
-            byte[] buffer = new byte[8192];
-            System.out.println("debug...");
+        byte[] aByte = new byte[1];
+        int bytesRead;
 
-            // file size in separate msg
-            int filesize = 10000;
-            int read = 0;
-            int totalRead = 0;
-            int remaining = filesize;
+        baos = new ByteArrayOutputStream();
 
-            // while ((read = inFromServer.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
-            //     System.out.println("debug...");
-            //     totalRead += read;
-            //     remaining -= read;
-            //     System.out.println("read " + totalRead + " bytes.");
-            //     fos.write(buffer, 0, read);
-            // }
-        }
-        catch (IOException i) {
-            System.out.println(i);
+        if (is != null) {
+
+            try {
+                fos = new FileOutputStream(fileOutput);
+                bos = new BufferedOutputStream(fos);
+                bytesRead = is.read(aByte, 0, aByte.length);
+
+                do {
+                    baos.write(aByte);
+                    bytesRead = is.read(aByte);
+                } while (bytesRead != -1);
+
+                bos.write(baos.toByteArray());
+                bos.flush();
+                System.out.println("Saved 'C:/TCPClient/test.jfif'!:)");
+                bos.close();
+            } catch (IOException i) {
+                System.out.println(i);
+            }
         }
     }
+
+//        try {
+//            inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+//            fos = new FileOutputStream("dlwlrma.jfif");
+//            byte[] buffer = new byte[8192];
+//
+//            // file size in separate msg
+//            int filesize = 10000;
+//            int read = 0;
+//            int totalRead = 0;
+//            int remaining = filesize;
+//
+//            // while ((read = inFromServer.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
+//            //     System.out.println("debug...");
+//            //     totalRead += read;
+//            //     remaining -= read;
+//            //     System.out.println("read " + totalRead + " bytes.");
+//            //     fos.write(buffer, 0, read);
+//            // }
+//        }
+//        catch (IOException i) {
+//            System.out.println(i);
+//        }
+//    }
 
     public void printInfo() {
         System.out.println("Connected.");
@@ -132,9 +162,10 @@ public class TCPClient {
                     // System.out.print("port: ");
                     // port = keyboard.nextInt();
 
-                    TCPClient client = new TCPClient("127.0.0.1", 8002, "C:/TCPClient/");
-                    client.sendLine();
-                    client.recieveLine();
+                    TCPClient client = new TCPClient("127.0.0.1", 8002);
+//                    client.sendLine();
+//                    client.recieveLine();
+                    client.saveFile();
                     client.close();
                     break;
                 case "h":

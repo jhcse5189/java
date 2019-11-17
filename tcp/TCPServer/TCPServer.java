@@ -14,13 +14,14 @@ public class TCPServer {
     private Socket connectionSocket      = null;
 
     private BufferedReader inFromClient  = null;
-    private DataOutputStream outToClient = null;
+    private BufferedOutputStream outToClient = null;
 
     private FileInputStream fis          = null;
+    private BufferedInputStream bis              = null;
 
     
     // constructor to put ip iddress and port
-    public TCPServer (int port, String file) {
+    public TCPServer (int port) {
 
         try {
             // create welcome socket, at the port
@@ -38,23 +39,9 @@ public class TCPServer {
             // create input stream, attached to socket
             inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
             // create output stream, attached to socket
-            outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+            outToClient = new BufferedOutputStream(connectionSocket.getOutputStream());
 
             printInfo();
-        }
-        catch (IOException i) {
-            System.out.println(i);
-        }
-    }
-
-    public void capitalization() {
-
-        try {
-            // read in line from socket
-            clientLine = inFromClient.readLine();
-            capitalizedLine = clientLine.toUpperCase() + '\n';
-
-            outToClient.writeBytes(capitalizedLine);
         }
         catch (IOException i) {
             System.out.println(i);
@@ -82,23 +69,34 @@ public class TCPServer {
     }
 
 
-    public void sendFile(String file) {
+    public void sendFile() {
+
+        File myFile = new File( fileToSend );
+        byte[] buffer = new byte[(int)myFile.length()];
 
         try {
-            fis = new FileInputStream(file);
-            byte[] buffer = new byte[8192];
-
-            while (fis.read(buffer) > 0) {
-                outToClient.write(buffer);
-            }
+            fis = new FileInputStream(myFile);
+//            while (fis.read(buffer) > 0) {
+//                outToClient.write(buffer);
+//            }
         }
         catch (FileNotFoundException e) {
             System.out.println(e);
         }
+
+
+        bis = new BufferedInputStream(fis);
+        try {
+            bis.read(buffer, 0, buffer.length);
+            outToClient.write(buffer, 0, buffer.length);
+            outToClient.flush();
+            System.out.println("'C:/TCPServer/dlwlrma.jfif' is Sent!:)");
+        }
         catch (IOException i) {
             System.out.println(i);
         }
-        
+
+
         try {
             fis.close();
             outToClient.close();
@@ -107,6 +105,22 @@ public class TCPServer {
             System.out.println(i);
         }
         
+    }
+
+    public void capitalization() {
+
+        try {
+            // read in line from socket
+            clientLine = inFromClient.readLine();
+            capitalizedLine = clientLine.toUpperCase() + '\n';
+
+            byte[] buffer = new byte[(int)capitalizedLine.length()];
+            outToClient.write(buffer, 0, capitalizedLine.length());
+            outToClient.flush();
+        }
+        catch (IOException i) {
+            System.out.println(i);
+        }
     }
 
     public static void main(String[] args) {
@@ -123,7 +137,6 @@ public class TCPServer {
             word = keyboard.next();
 
             switch (word) {
-                // 8002, dlwlrma.jfif
                 case "s":
                     // System.out.print("port: ");
                     // port = keyboard.nextInt();
@@ -131,9 +144,10 @@ public class TCPServer {
                     // System.out.print("file name: ");
                     // word = keyboard.next();
 
-                    TCPServer server = new TCPServer(8002, "dlwlrma.jfif");
+                    TCPServer server = new TCPServer(8002);
                     server.waitForClient();
-                    server.capitalization();
+                    //server.capitalization();
+                    server.sendFile();
                     server.close();
                     break;
                 case "h":
