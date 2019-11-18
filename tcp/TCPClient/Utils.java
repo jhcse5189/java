@@ -1,5 +1,3 @@
-package com.assignment.bittorent;
-
 public class Utils {
 
     public float version;

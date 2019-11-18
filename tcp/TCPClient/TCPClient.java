@@ -1,20 +1,18 @@
+import java.awt.desktop.SystemEventListener;
 import java.util.Scanner;
 import java.io.*;
 import java.net.*;
 
 public class TCPClient {
 
-    private final static String fileOutput = "C:/TCPClient/test.jfif";
-
-    private String line = "";
-    private String modifiedLine = "";
+    private static String fileToSeek  = null;
+    private static String fileToSend = null;
 
     // initialize socket and input output streams
     private Socket clientSocket             = null;
     private BufferedReader inFromUser       = null;
     private DataOutputStream outToServer    = null;
 
-    //private BufferedReader inFromServer     = null;
     private BufferedReader inFromServer     = null;
 
     private FileOutputStream fos            = null;
@@ -23,8 +21,9 @@ public class TCPClient {
     private BufferedOutputStream bos        = null;
 
     // constructor to put ip iddress and port
-    public TCPClient (String address, int port) {
+    public TCPClient (String address, int port, String file) {
 
+        fileToSeek = file;
         // create client socket, connect to server
         try {
             clientSocket = new Socket(address, port);
@@ -45,42 +44,22 @@ public class TCPClient {
         }
     }
 
-    public void sendLine() {
-
-        try {
-            line = inFromUser.readLine();
-
-            // send line to server
-            outToServer.writeBytes(line + '\n');
-        }
-        catch (IOException i) {
-            System.out.println(i);
-        }
-    }
-
-    public void recieveLine() {
-        // string to read message from server
-        try {
-            modifiedLine = inFromServer.readLine();
-            System.out.println("FROM SERVER: " + modifiedLine);
-        }
-        catch (IOException i) {
-            System.out.println(i);
-        }
-    }
-
-    public void close() {
-        // close the connection
-        System.out.println("Closing...");
-        try {
-            clientSocket.close();
-        }
-        catch(IOException i) {
-            System.out.println(i);
-        }
+    public void printInfo() {
+        System.out.println("Connected.");
+        System.out.printf("\tserver addr: " + clientSocket.getInetAddress() + "\n");
+        System.out.printf("\tserver port: " + clientSocket.getPort() + "\n");
+        System.out.printf("\tclient port: " + clientSocket.getLocalPort() + "\n");
     }
 
     public void saveFile() {
+
+        try {
+            outToServer.writeBytes( fileToSeek + '\n');
+        }
+        catch (IOException i) {
+            System.out.println(i);
+        }
+
 
         byte[] aByte = new byte[1];
         int bytesRead;
@@ -90,7 +69,7 @@ public class TCPClient {
         if (is != null) {
 
             try {
-                fos = new FileOutputStream(fileOutput);
+                fos = new FileOutputStream("./test.jfif");
                 bos = new BufferedOutputStream(fos);
                 bytesRead = is.read(aByte, 0, aByte.length);
 
@@ -101,7 +80,7 @@ public class TCPClient {
 
                 bos.write(baos.toByteArray());
                 bos.flush();
-                System.out.println("Saved 'C:/TCPClient/test.jfif'!:)");
+                System.out.println("'" + fileToSeek + "' Saved as 'test.jfif' in current directory:)");
                 bos.close();
             } catch (IOException i) {
                 System.out.println(i);
@@ -133,17 +112,26 @@ public class TCPClient {
 //        }
 //    }
 
-    public void printInfo() {
-        System.out.println("Connected.");
-        System.out.printf("\tserver addr: " + clientSocket.getInetAddress() + "\n");
-        System.out.printf("\tserver port: " + clientSocket.getPort() + "\n");
-        System.out.printf("\tclient port: " + clientSocket.getLocalPort() + "\n");
+
+
+    public void close() {
+        // close the connection
+        System.out.println("Closing...");
+        try {
+            clientSocket.close();
+        }
+        catch(IOException i) {
+            System.out.println(i);
+        }
     }
 
+    // 127.0.0.1, 8002, dlwlrma.jfif
     public static void main(String[] args) {
 
         Scanner keyboard = new Scanner(System.in);
-        int port;
+        String ip;// = args[0];
+        int port;// = Integer.parseInt(args[1]);
+
         String word;
 
         Utils utils = new Utils();
@@ -152,19 +140,10 @@ public class TCPClient {
         while (true) {
             System.out.print("BT> ");
             word = keyboard.next();
-
+            // ip, port, args[2]
             switch (word) {
-                // 127.0.0.1, 8002
                 case "c":
-                    // System.out.print("host: ");
-                    // word = keyboard.next();
-
-                    // System.out.print("port: ");
-                    // port = keyboard.nextInt();
-
-                    TCPClient client = new TCPClient("127.0.0.1", 8002);
-//                    client.sendLine();
-//                    client.recieveLine();
+                    TCPClient client = new TCPClient("127.0.0.1", 8002, "dlwlrma.jfif");
                     client.saveFile();
                     client.close();
                     break;

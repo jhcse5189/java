@@ -1,13 +1,12 @@
+import java.awt.desktop.SystemEventListener;
 import java.util.Scanner;
 import java.io.*;
 import java.net.*;
 
 public class TCPServer {
 
-    private final static String fileToSend = "C:/TCPServer/dlwlrma.jfif";
-
-    private String clientLine = "";
-    private String capitalizedLine = "";
+    private static String fileToSend = null;
+    private static String fileToSeek = null;
 
     // initialize socket and input output streams
     private ServerSocket welcomeSocket   = null;
@@ -15,14 +14,16 @@ public class TCPServer {
 
     private BufferedReader inFromClient  = null;
     private BufferedOutputStream outToClient = null;
+    private DataOutputStream outToClientName = null;
 
     private FileInputStream fis          = null;
     private BufferedInputStream bis              = null;
 
     
     // constructor to put ip iddress and port
-    public TCPServer (int port) {
+    public TCPServer (int port, String file) {
 
+        fileToSend = file;
         try {
             // create welcome socket, at the port
             welcomeSocket = new ServerSocket(port);
@@ -48,18 +49,6 @@ public class TCPServer {
         }
     }
 
-    public void close() {
-        // close the connection
-        System.out.println("Closing...");
-        try {
-            welcomeSocket.close();
-            connectionSocket.close();
-        }
-        catch(IOException i) {
-            System.out.println(i);
-        }
-    }
-
     public void printInfo() {
         System.out.println("Connected.");
         // print service port & client's address and port.
@@ -71,7 +60,26 @@ public class TCPServer {
 
     public void sendFile() {
 
-        File myFile = new File( fileToSend );
+        try {
+            fileToSeek = inFromClient.readLine();
+        }
+        catch (IOException i) {
+            System.out.println(i);
+        }
+
+        try {
+            if (!fileToSeek.equals(fileToSend)) {
+                System.out.println("Can't find file name " + fileToSeek);
+                outToClientName.writeBytes(fileToSend + '\n');
+                close();
+                //System.exit(-1);
+            }
+        }
+        catch (IOException i) {
+            System.out.println(i);
+        }
+
+        File myFile = new File( "./" + fileToSend );
         byte[] buffer = new byte[(int)myFile.length()];
 
         try {
@@ -90,7 +98,7 @@ public class TCPServer {
             bis.read(buffer, 0, buffer.length);
             outToClient.write(buffer, 0, buffer.length);
             outToClient.flush();
-            System.out.println("'C:/TCPServer/dlwlrma.jfif' is Sent!:)");
+            System.out.println("'dlwlrma.jfif' is Sent!:)");
         }
         catch (IOException i) {
             System.out.println(i);
@@ -107,18 +115,14 @@ public class TCPServer {
         
     }
 
-    public void capitalization() {
-
+    public void close() {
+        // close the connection
+        System.out.println("Closing...");
         try {
-            // read in line from socket
-            clientLine = inFromClient.readLine();
-            capitalizedLine = clientLine.toUpperCase() + '\n';
-
-            byte[] buffer = new byte[(int)capitalizedLine.length()];
-            outToClient.write(buffer, 0, capitalizedLine.length());
-            outToClient.flush();
+            welcomeSocket.close();
+            connectionSocket.close();
         }
-        catch (IOException i) {
+        catch(IOException i) {
             System.out.println(i);
         }
     }
@@ -126,7 +130,7 @@ public class TCPServer {
     public static void main(String[] args) {
 
         Scanner keyboard = new Scanner(System.in);
-        int port;
+        int port;// = Integer.parseInt(args[0]);
         String word;
 
         Utils utils = new Utils();
@@ -135,18 +139,11 @@ public class TCPServer {
         while (true) {
             System.out.print("BT> ");
             word = keyboard.next();
-
+            // port, args[1]
             switch (word) {
                 case "s":
-                    // System.out.print("port: ");
-                    // port = keyboard.nextInt();
-
-                    // System.out.print("file name: ");
-                    // word = keyboard.next();
-
-                    TCPServer server = new TCPServer(8002);
+                    TCPServer server = new TCPServer(8002, "dlwlrma.jfif");
                     server.waitForClient();
-                    //server.capitalization();
                     server.sendFile();
                     server.close();
                     break;

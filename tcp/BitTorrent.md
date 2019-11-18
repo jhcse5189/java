@@ -1,31 +1,8 @@
 # BitTorrent in Java
 
-<div class=pull-right>
-    prof. Choonhwa Lee
-</div>
-
-* * *
-
-* TCPServer / TCPClient
-
-1. 일단 C:/TCPServer/dlwlrma.jfif, C:/TCPClient로 만드세요.
-
-        (Client 경로를 만들어주지 않으면 폴더를 알아서 안만들더군요...)
-
-2. git clone 해서 받으세요.
-
-        (3 파일을 한 폴더에 저장해도 됩니다.)
-
-3. Server, Client 각각 main이 있으므로 컴파일 해줍니다.
-
-        $ javac TCPServer.java
-        $ javac TCPClient.java
-
-4. `java`로 실행한 후, `h`를 입력하면 각각 사용 설명을 볼 수 있습니다.
-
-        (그냥 서버열고 s, 클라이언트열고 c 누르면 되긴합니다.)
-
-5. 그리하면 이지금!님이 Client에 Server로부터 전송됩니다아ㅣㅣ!
+                                                                  prof. Choonhwa Lee
+                                                                 컴퓨터소프트웨어학부
+                                                                    2018009143 조현서
 
 * * *
 
@@ -39,13 +16,37 @@
 - use blocking I/O (don't need to use thread yet)
 ~~~
 
-- [ ] Blocking I/O
+- [X] Blocking I/O
 
         Infinitely wait for result of I/O request.
         Whole processes are blocked, therefore can't perform any other operation if it requests.
 
+Server와 Client에 모두 Blocking I/O을 통한 Socket networking을\
+구현하기위해 `java.io.*`, `java.net.*`을 import하여 사용하였다.
+
+- [X] data file specified as a command-line argument
+
+        Server( a seeder )'s command-line arguments will be (IP, TCP port#) of
+        Client( a leecher peer ), along with file name to share with Client.
+
+        What file to seek is also specified as Client's command-line argument.
+
+ 
+
+- [ ] file is chopped into chunks of 10KB
+
+
+
+* * *
+
 * Assignment #2
 
 > Implement swarming protocol in P2P method.
+
+~~~
+- 5 peers in the network - one seeder & four leechers
+- (don't need to tracker for this assignment)
+- ...
+~~~
 
 * * *

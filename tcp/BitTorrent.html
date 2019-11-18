@@ -422,6 +422,10 @@ void 0!==arguments[0]&&(br.sequenceConfig=arguments[0]),e=arguments[1]):e=argume
     });
   </script>
 <h1 id="bittorrent-in-java">BitTorrent in Java</h1>
+<pre><code>                                                              prof. Choonhwa Lee
+                                                             컴퓨터소프트웨어학부
+                                                                2018009143 조현서
+</code></pre>
 <hr>
 <ul>
 <li>Assignment #1</li>
@@ -435,18 +439,39 @@ void 0!==arguments[0]&&(br.sequenceConfig=arguments[0]),e=arguments[1]):e=argume
 </div></code></pre>
 <ul>
 <li>
-<p><input type="checkbox" id="checkbox0"><label for="checkbox0">Blocking I/O</label></p>
+<p><input type="checkbox" id="checkbox0" checked="true"><label for="checkbox0">Blocking I/O</label></p>
 <pre><code>  Infinitely wait for result of I/O request.
   Whole processes are blocked, therefore can't perform any other operation if it requests.
 </code></pre>
 </li>
 </ul>
+<p>Server와 Client에 모두 Blocking I/O을 통한 Socket networking을<br>
+구현하기위해 <code>java.io.*</code>, <code>java.net.*</code>을 import하여 사용하였다.</p>
+<ul>
+<li>
+<p><input type="checkbox" id="checkbox1" checked="true"><label for="checkbox1">data file specified as a command-line argument</label></p>
+<pre><code>  Server( a seeder )'s command-line arguments will be (IP, TCP port#) of
+  Client( a leecher peer ), along with file name to share with Client.
+
+  What file to seek is also specified as Client's command-line argument.
+</code></pre>
+</li>
+<li>
+<p><input type="checkbox" id="checkbox2"><label for="checkbox2">file is chopped into chunks of 10KB</label></p>
+</li>
+</ul>
+<hr>
 <ul>
 <li>Assignment #2</li>
 </ul>
 <blockquote>
 <p>Implement swarming protocol in P2P method.</p>
 </blockquote>
+<pre class="hljs"><code><div>- 5 peers in the network - one seeder &amp; four leechers
+- (don't need to tracker for this assignment)
+- ...
+</div></code></pre>
+<hr>
 
 </body>
 </html>
