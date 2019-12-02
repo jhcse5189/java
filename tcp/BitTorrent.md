@@ -1,8 +1,8 @@
 # BitTorrent in Java
 
-                                                                  prof. Choonhwa Lee
-                                                                 컴퓨터소프트웨어학부
-                                                                    2018009143 조현서
+                                                                             prof. Choonhwa Lee
+                                                                             컴퓨터소프트웨어학부
+                                                                               2018009143 조현서
 
 * * *
 

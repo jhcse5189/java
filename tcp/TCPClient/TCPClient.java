@@ -16,17 +16,19 @@ public class TCPClient {
     private BufferedReader inFromServer     = null;
 
     private FileOutputStream fos            = null;
-    private ByteArrayOutputStream baos      = null;
     private InputStream is                  = null;
+    private BufferedInputStream bis = null;
     private BufferedOutputStream bos        = null;
+    private ByteArrayOutputStream baos = null;
 
     // constructor to put ip iddress and port
-    public TCPClient (String address, int port, String file) {
+    public TCPClient (String address, int port, String localAddr, int localPort, String file) {
 
         fileToSeek = file;
         // create client socket, connect to server
         try {
-            clientSocket = new Socket(address, port);
+            InetAddress addr = InetAddress.getByName(address);
+            clientSocket = new Socket(addr, port, addr, localPort);
 
             // takes input stream from terminal
             inFromUser = new BufferedReader(new InputStreamReader(System.in));
@@ -62,25 +64,26 @@ public class TCPClient {
 
 
         byte[] aByte = new byte[1];
+        byte[] buffer = new byte[10000];
         int bytesRead;
 
-        baos = new ByteArrayOutputStream();
+        bis = new BufferedInputStream(is);
 
         if (is != null) {
 
             try {
-                fos = new FileOutputStream("./test.jfif");
+                fos = new FileOutputStream("./client8002/" + fileToSeek);
                 bos = new BufferedOutputStream(fos);
-                bytesRead = is.read(aByte, 0, aByte.length);
 
-                do {
-                    baos.write(aByte);
-                    bytesRead = is.read(aByte);
-                } while (bytesRead != -1);
+                int chunk = 1;
+                while ((bytesRead = is.read(buffer, 0, buffer.length)) > 0) {
+                    bos.write(buffer, 0, bytesRead);
+                    bos.flush();
+                    System.out.printf("chunk %2d is received! in %5d bytes:)\n", chunk, bytesRead);
+                    chunk++;
+                }
 
-                bos.write(baos.toByteArray());
-                bos.flush();
-                System.out.println("'" + fileToSeek + "' Saved as 'test.jfif' in current directory:)");
+                System.out.println("'" + fileToSeek + "' Saved in client's directory:)");
                 bos.close();
             } catch (IOException i) {
                 System.out.println(i);
@@ -125,25 +128,23 @@ public class TCPClient {
         }
     }
 
-    // 127.0.0.1, 8002, dlwlrma.jfif
+    // 800X, dlwlrma.jfif
     public static void main(String[] args) {
 
         Scanner keyboard = new Scanner(System.in);
-        String ip;// = args[0];
-        int port;// = Integer.parseInt(args[1]);
-
-        String word;
+        int localPort = 8002;//Integer.parseInt(args[1]);
+        String file = "youandme.jpg";//= args[2];
 
         Utils utils = new Utils();
         utils.welcome();
 
+        String word;
         while (true) {
             System.out.print("BT> ");
             word = keyboard.next();
-            // ip, port, args[2]
             switch (word) {
                 case "c":
-                    TCPClient client = new TCPClient("127.0.0.1", 8002, "dlwlrma.jfif");
+                    TCPClient client = new TCPClient("127.0.0.1", 8001, "127.0.0.1", localPort,  file);
                     client.saveFile();
                     client.close();
                     break;
