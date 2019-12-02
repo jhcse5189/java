@@ -2,39 +2,43 @@ import java.awt.desktop.SystemEventListener;
 import java.util.Scanner;
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TCPClient {
 
     private static String fileToSeek  = null;
     private static String fileToSend = null;
+    private static String extension = null;
+    private static int totalChunks;
 
     // initialize socket and input output streams
     private Socket clientSocket             = null;
-    private BufferedReader inFromUser       = null;
-    private DataOutputStream outToServer    = null;
 
+    private DataOutputStream outToServer    = null;
     private BufferedReader inFromServer     = null;
 
-    private FileOutputStream fos            = null;
     private InputStream is                  = null;
-    private BufferedInputStream bis = null;
+    private FileInputStream fis = null;
+    private FileOutputStream fos            = null;
     private BufferedOutputStream bos        = null;
-    private ByteArrayOutputStream baos = null;
 
     // constructor to put ip iddress and port
-    public TCPClient (String address, int port, String localAddr, int localPort, String file) {
+    public TCPClient (String address, int port, String localAddr, int localPort, String fileToSeek) {
 
-        fileToSeek = file;
+        this.fileToSeek = fileToSeek;
+        extension = fileToSeek.split("\\.(?=[^\\.]+$)")[1];
         // create client socket, connect to server
         try {
             InetAddress addr = InetAddress.getByName(address);
             clientSocket = new Socket(addr, port, addr, localPort);
 
             // takes input stream from terminal
-            inFromUser = new BufferedReader(new InputStreamReader(System.in));
+            //inFromUser = new BufferedReader(new InputStreamReader(System.in));
             // sends output stream attached to the socket
             outToServer = new DataOutputStream(clientSocket.getOutputStream());
 
+            inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             // create input stream attached to the socket
             //inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             is = clientSocket.getInputStream();
@@ -57,30 +61,33 @@ public class TCPClient {
 
         try {
             outToServer.writeBytes( fileToSeek + '\n');
+            totalChunks = Integer.parseInt(inFromServer.readLine());
         }
         catch (IOException i) {
             System.out.println(i);
         }
 
-
         byte[] aByte = new byte[1];
         byte[] buffer = new byte[10000];
         int bytesRead;
 
-        bis = new BufferedInputStream(is);
-
         if (is != null) {
 
             try {
-                fos = new FileOutputStream("./client8002/" + fileToSeek);
+                int chunk = 1;
+                fos = new FileOutputStream("./client8002/chunk" + chunk + "." + extension);
                 bos = new BufferedOutputStream(fos);
 
-                int chunk = 1;
-                while ((bytesRead = is.read(buffer, 0, buffer.length)) > 0) {
+                while ((chunk < totalChunks) && ((bytesRead = is.read(buffer, 0, buffer.length)) > 0)) {
                     bos.write(buffer, 0, bytesRead);
                     bos.flush();
                     System.out.printf("chunk %2d is received! in %5d bytes:)\n", chunk, bytesRead);
+
+                    if (chunk == totalChunks -1) break;
+
                     chunk++;
+                    fos = new FileOutputStream("./client8002/chunk" + chunk + "." + extension);
+                    bos = new BufferedOutputStream(fos);
                 }
 
                 System.out.println("'" + fileToSeek + "' Saved in client's directory:)");
@@ -91,30 +98,46 @@ public class TCPClient {
         }
     }
 
-//        try {
-//            inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-//            fos = new FileOutputStream("dlwlrma.jfif");
-//            byte[] buffer = new byte[8192];
-//
-//            // file size in separate msg
-//            int filesize = 10000;
-//            int read = 0;
-//            int totalRead = 0;
-//            int remaining = filesize;
-//
-//            // while ((read = inFromServer.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
-//            //     System.out.println("debug...");
-//            //     totalRead += read;
-//            //     remaining -= read;
-//            //     System.out.println("read " + totalRead + " bytes.");
-//            //     fos.write(buffer, 0, read);
-//            // }
-//        }
-//        catch (IOException i) {
-//            System.out.println(i);
-//        }
-//    }
+    public void mergeFile() {
 
+        System.out.println("Starting merge in 5 seconds...");
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            System.out.println(e);
+        }
+
+        File ofile = new File("./client8002/" + fileToSeek);
+
+        byte[] buffer;
+        int bytesRead = 0;
+
+        List<File> list = new ArrayList<File>();
+        for (int i = 1; i < totalChunks; i++) {
+            list.add(new File("./client8002/chunk" + i + "." + extension));
+        }
+
+        try {
+            fos = new FileOutputStream(ofile, true);
+            for (File f : list) {
+                fis = new FileInputStream(f);
+                buffer = new byte[(int)f.length()];
+                bytesRead = fis.read(buffer, 0, (int)f.length());
+                assert(bytesRead == buffer.length);
+                assert(bytesRead == (int)f.length());
+                fos.write(buffer);
+                fos.flush();
+                buffer = null;
+                fis.close();
+                fis = null;
+            }
+            fos.close();
+            fos = null;
+
+        } catch (IOException i) {
+            System.out.println(i);
+        }
+    }
 
 
     public void close() {
@@ -133,7 +156,7 @@ public class TCPClient {
 
         Scanner keyboard = new Scanner(System.in);
         int localPort = 8002;//Integer.parseInt(args[1]);
-        String file = "youandme.jpg";//= args[2];
+        fileToSeek = "youandme.jpg";//= args[2];
 
         Utils utils = new Utils();
         utils.welcome();
@@ -144,8 +167,9 @@ public class TCPClient {
             word = keyboard.next();
             switch (word) {
                 case "c":
-                    TCPClient client = new TCPClient("127.0.0.1", 8001, "127.0.0.1", localPort,  file);
+                    TCPClient client = new TCPClient("127.0.0.1", 8001, "127.0.0.1", localPort,  fileToSeek);
                     client.saveFile();
+                    client.mergeFile();
                     client.close();
                     break;
                 case "h":
