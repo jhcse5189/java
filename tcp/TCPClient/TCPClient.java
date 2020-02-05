@@ -151,12 +151,27 @@ public class TCPClient {
         }
     }
 
-    // 800X, dlwlrma.jfif
+    // 8002, youandme.jpg
     public static void main(String[] args) {
 
+        if (args.length < 2) {
+            System.out.println("invalid command-line arguments: " + args.length);
+            System.exit(-1);
+        }
+
+        int localPort = 0;
+        try {
+            localPort = Integer.parseInt(args[0]);
+            fileToSeek = args[1];
+        } catch (NumberFormatException e) {
+            System.out.println(e);
+            System.exit(-1);
+        } catch (Exception e) {
+            System.out.println(e);
+            System.exit(-1);
+        }
+
         Scanner keyboard = new Scanner(System.in);
-        int localPort = 8002;//Integer.parseInt(args[1]);
-        fileToSeek = "youandme.jpg";//= args[2];
 
         Utils utils = new Utils();
         utils.welcome();

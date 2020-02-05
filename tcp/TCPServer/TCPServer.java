@@ -188,11 +188,27 @@ public class TCPServer {
         }
     }
 
-    // (filename.)
+    // 8001, youandme.jpg
     public static void main(String[] args) {
 
-        Scanner keyboard = new Scanner(System.in);
-        fileToSend = "youandme.jpg"; //= args[1];
+        if (args.length < 2) {
+            System.out.println("invalid command-line arguments: " + args.length);
+            System.exit(-1);
+        }
+
+        int localPort = 0;
+        try {
+            localPort = Integer.parseInt(args[0]);
+            fileToSend = args[1];
+        } catch (NumberFormatException e) {
+            System.out.println(e);
+            System.exit(-1);
+        } catch (Exception e) {
+            System.out.println(e);
+            System.exit(-1);
+        }
+
+        Scanner keyboard = new Scanner(System.in);        
         String word;
 
         Utils utils = new Utils();
@@ -204,7 +220,7 @@ public class TCPServer {
 
             switch (word) {
                 case "s":
-                    TCPServer server = new TCPServer(8001, fileToSend);
+                    TCPServer server = new TCPServer(localPort, fileToSend);
                     server.waitForClient();
                     server.sendFile();
                     server.close();
